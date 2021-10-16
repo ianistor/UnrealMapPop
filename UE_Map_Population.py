@@ -9,6 +9,10 @@ from unreal import StaticMesh as mesh
 #TODO: Figure out how calculating bboxes works
 #TODO: Figure out how to move the next prop based on the previous prop Bbox
 
+"""
+APi docs
+https://docs.unrealengine.com/4.27/en-US/PythonAPI/search.html?q=bounding+box
+"""
 
 unreal.log("---Starting Population---")
 
