@@ -38,6 +38,7 @@ class TestWidget(QtWidgets.QWidget):
     coord_x = 0
     coord_y = 0
     coord_z = 250
+    # text_asset = 
 
     def __init__(self, parent=None):
 
@@ -47,15 +48,16 @@ class TestWidget(QtWidgets.QWidget):
         self.setMinimumSize(200,100)
         self.setWindowOpacity(0.9)
 
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        print (dir_path)
+
+        # dir_path = os.path.dirname(os.path.realpath(__file__))
+        # print (dir_path)
 
         with open(StyleSheetFile, "r") as sh:
             self.setStyleSheet(sh.read())
 
         vbox = QtWidgets.QVBoxLayout(self)
         btn = QtWidgets.QPushButton('Populate Level')
-        btn.clicked.connect(self.btn_clicked)        
+        btn.clicked.connect(self.btn_populate)        
         vbox.addWidget(btn)
 
         label_row = QtWidgets.QLabel()
@@ -73,7 +75,8 @@ class TestWidget(QtWidgets.QWidget):
         vbox.addWidget(column_spin)
         
         btn_quit = QtWidgets.QPushButton('Quit')
-        btn_quit.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        # btn_quit.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        btn_quit.clicked.connect(self.quit_app)
         vbox.addWidget(btn_quit)
 
 
@@ -83,6 +86,10 @@ class TestWidget(QtWidgets.QWidget):
     def pop_message_window(self, title, description): # Self so it does not cry <3
 
         unreal.EditorDialog.show_message(title, description,message_type=unreal.AppMsgType.OK)
+
+    def keep_last_bbox(self, last_bbox):
+        last_bbox = 0
+        return last_bbox
         
     def populate_level(self):
 
@@ -95,6 +102,7 @@ class TestWidget(QtWidgets.QWidget):
                 asset_data = unreal.EditorUtilityLibrary.get_selected_asset_data()
                 asset_path = unreal.EditorUtilityLibrary.get_path_name(self.assets[self.loop_count])       # Getting the path to the selected asset
                 try_to_load = unreal.EditorAssetLibrary.load_asset(asset_path)
+              
                 unreal.log("---Calculating BBox Location Offsets---")
                 self.get_bbox_min = mesh.get_bounding_box(i).min.x
                 self.get_bbox_max = mesh.get_bounding_box(i).max.x 
@@ -103,14 +111,17 @@ class TestWidget(QtWidgets.QWidget):
                 print (actor_location_math.x, actor_location_math.y, actor_location_math.z)
                 actor_rotation = unreal.Rotator(0.0, 0.0, 0.0)      # Dont really think this will ever be needed but its here in case its needed
                 unreal.EditorLevelLibrary.spawn_actor_from_object(try_to_load, actor_location_math, actor_rotation)
+                unreal.EditorLevelLibrary().spawn_actor_from_class(unreal.StaticMeshActor("TextRenderActor"), actor_location_math, actor_rotation)
                 self.loop_count += 1 
+                # Rembmer last position and then add on it
+                
         return self.loop_count
 
     def get_number_of_assets(self):
         self.total_assets_places = str(str("Total of: ") + str(self.loop_count) + str(" assets placed"))
         # self.pop_message_window("LevelPopulator", self.total_assets_places)
 
-    def btn_clicked(self):
+    def btn_populate(self):
         print('Clicked')
         unreal.log('---Clicked---')
         self.populate_level()
@@ -118,6 +129,7 @@ class TestWidget(QtWidgets.QWidget):
         self.loop_count = 0 # Reseting Counter in case you want to place it again
 
     def quit_app(self):
+        print("quiting")
         app.quit()
 
 
