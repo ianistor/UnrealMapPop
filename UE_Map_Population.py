@@ -2,21 +2,15 @@ import unreal
 import sys
 import os
 import qdarkstyle
-from PySide2 import QtGui,QtCore,QtWidgets
+from PySide2 import QtGui, QtCore, QtWidgets
 from PySide2.QtGui import QPalette, QColor
 from PySide2.QtCore import Qt, QSize
 from unreal import StaticMesh as mesh
 from unreal import Vector
 
-#TODO: Get selection from CB
-#TODO: Split them up on classes
-#TODO: Spawn actors in level with offset based on BBox (or maybe Collision bounds)
+#TODO: Add different classes errors/solutions
+#TODO: Add a folder in the Level called Assets
 
-#TODO: Figure out how calculating bboxes works
-#TODO: Figure out how to move the next prop based on the previous prop Bbox
-#TODO: Expose options for display
-    #TODO: Text Labels, Row, and Columns
-    #TODO: Padding
 
 """
 APi docs
@@ -33,12 +27,12 @@ Author = "Ioan-Andrei Nistor"
 Contact = "ioan.andrei.nistor@gmail.com"
 StyleSheetFile = "D:/GitHubRepos/UnrealMapPopulator/UnrealMapPop/darkOrange.css"
 
+
 class TestWidget(QtWidgets.QWidget):
     loop_count = 0
-    coord_x = 0
     coord_y = 0
+    coord_x = 0
     coord_z = 250
-    # text_asset = 
 
     def __init__(self, parent=None):
 
@@ -87,10 +81,12 @@ class TestWidget(QtWidgets.QWidget):
 
         unreal.EditorDialog.show_message(title, description,message_type=unreal.AppMsgType.OK)
 
-    def keep_last_bbox(self, last_bbox):
-        last_bbox = 0
-        return last_bbox
-        
+    def get_class(self, asset):
+        #Get Selection
+        print ("Looking into Class of Selected")
+        #Returns class
+
+
     def populate_level(self):
 
         # Still Need to Fix a proper offset between assets
@@ -100,20 +96,22 @@ class TestWidget(QtWidgets.QWidget):
         else:      
             for i in self.assets:
                 asset_data = unreal.EditorUtilityLibrary.get_selected_asset_data()
+                # asset_type = unreal.EditorUtilityLibrary.get_class()
+                # print (asset_type)
                 asset_path = unreal.EditorUtilityLibrary.get_path_name(self.assets[self.loop_count])       # Getting the path to the selected asset
                 try_to_load = unreal.EditorAssetLibrary.load_asset(asset_path)
               
                 unreal.log("---Calculating BBox Location Offsets---")
-                self.get_bbox_min = mesh.get_bounding_box(i).min.x
-                self.get_bbox_max = mesh.get_bounding_box(i).max.x 
-                self.coord_x = self.coord_x - self.get_bbox_min *2.5
+                self.get_bbox_min = mesh.get_bounding_box(i).min.y
+                self.get_bbox_max = mesh.get_bounding_box(i).max.y 
+                self.coord_y = self.coord_y - self.get_bbox_min *2.5 + self.get_bbox_max
                 actor_location_math = unreal.Vector(self.coord_x, self.coord_y, self.coord_z)
                 print (actor_location_math.x, actor_location_math.y, actor_location_math.z)
                 actor_rotation = unreal.Rotator(0.0, 0.0, 0.0)      # Dont really think this will ever be needed but its here in case its needed
                 unreal.EditorLevelLibrary.spawn_actor_from_object(try_to_load, actor_location_math, actor_rotation)
-                unreal.EditorLevelLibrary().spawn_actor_from_class(unreal.StaticMeshActor("TextRenderActor"), actor_location_math, actor_rotation)
+                # unreal.EditorLevelLibrary().spawn_actor_from_class(unreal.StaticMeshActor("TextRenderActor"), actor_location_math, actor_rotation)
                 self.loop_count += 1 
-                # Rembmer last position and then add on it
+                self.coord_y = self.coord_y - self.get_bbox_min *2.5
                 
         return self.loop_count
 
@@ -130,8 +128,7 @@ class TestWidget(QtWidgets.QWidget):
 
     def quit_app(self):
         print("quiting")
-        app.quit()
-
+        app.close()
 
 
 unreal.log("---Curtain Drop---")
