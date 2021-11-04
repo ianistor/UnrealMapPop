@@ -1,3 +1,5 @@
+from typing import Text
+import PySide2
 import unreal
 import sys
 import os
@@ -5,11 +7,15 @@ import qdarkstyle
 from PySide2 import QtGui, QtCore, QtWidgets
 from PySide2.QtGui import QPalette, QColor
 from PySide2.QtCore import Qt, QSize
-from unreal import StaticMesh as mesh
+from unreal import HorizontalAlignment, StaticMesh as mesh
 from unreal import Vector
 
 #TODO: Add different classes errors/solutions
 #TODO: Add a folder in the Level called Assets
+#TODO: Work on Row/Column functionality
+#TODO: Figured out why two text labels are getting spawned
+#TODO: Figure out how to cleanly modify last added prop value from level (To modify Text name)
+#TODO: Add Object name on the Text Label
 
 
 """
@@ -21,10 +27,11 @@ https://docs.unrealengine.com/4.27/en-US/PythonAPI/search.html?q=bounding+box
 
 unreal.log("---Starting the show---")
 
-# Variables
 
 Author = "Ioan-Andrei Nistor"
 Contact = "ioan.andrei.nistor@gmail.com"
+
+
 StyleSheetFile = "D:/GitHubRepos/UnrealMapPopulator/UnrealMapPop/darkOrange.css"
 
 
@@ -45,10 +52,20 @@ class TestWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
 
         super(TestWidget, self).__init__(parent)
-        self.setWindowFlag(Qt.FramelessWindowHint) # This makes its headerless (looks nicer)
+    
+        self.setWindowFlags(
+            QtCore.Qt.Window |
+            QtCore.Qt.CustomizeWindowHint |
+            QtCore.Qt.WindowTitleHint |
+            QtCore.Qt.WindowCloseButtonHint |
+            QtCore.Qt.WindowMinimizeButtonHint |
+            QtCore.Qt.WindowStaysOnTopHint
+            )
+        # self.setWindowFlag(Qt.FramelessWindowHint) # This makes its headerless (looks nicer)
         self.setWindowTitle("Level Populator")
         self.setMinimumSize(200,100)
         self.setWindowOpacity(0.9)
+        self.offset = None
 
 
         # dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -61,6 +78,10 @@ class TestWidget(QtWidgets.QWidget):
         btn = QtWidgets.QPushButton('Populate Level')
         btn.clicked.connect(self.btn_populate)        
         vbox.addWidget(btn)
+
+        btn_test = QtWidgets.QPushButton("Test Button")
+        btn_test.clicked.connect(self.btn_test)
+        vbox.addWidget(btn_test)
 
         label_row = QtWidgets.QLabel()
         label_row.setText(("Rows"))
@@ -81,12 +102,31 @@ class TestWidget(QtWidgets.QWidget):
         btn_quit.clicked.connect(self.quit_app)
         vbox.addWidget(btn_quit)
 
+# # # UI WORK FOR MOUSE DRAG AND DROP
+#     def mousePressEvent(self, event):
+#         if event.button() == QtCore.Qt.LeftButton:
+#             self.offset = event.pos()
+#         else:
+#             super().mousePressEvent(event)
 
+#     def mouseMoveEvent(self, event):
+#         if self.offset is not None and event.buttons() == QtCore.Qt.LeftButton:
+#             self.move(self.pos() + event.pos() - self.offset)
+#         else:
+#             super().mouseMoveEvent(event)
 
+#     def mouseReleaseEvent(self, event):
+#         self.offset = None
+#         super().mouseReleaseEvent(event)
 
     
     def pop_message_window(self, title, description): # Self so it does not cry <3
+        """Poping a message window
 
+        Args:
+            title ([type]): [description]
+            description ([type]): [description]
+        """
         unreal.EditorDialog.show_message(title, description,message_type=unreal.AppMsgType.OK)
 
     def get_class(self, asset):
@@ -97,14 +137,20 @@ class TestWidget(QtWidgets.QWidget):
     def create_level_folder(self):
         # Lets create a folder to place assets in
         # unreal.EditorLevelUtils.get_name()
-        print (unreal.EditorLevelUtils.get_name())
+        return
+
+    def create_text_render(self):
+        # Get actor from class Text Render Actor
+        # Spawn Asset
+        unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.TextRenderActor, unreal.Vector(0,0,0), unreal.Rotator(0,0,0))
+        # print(unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.TextRenderActor, unreal.Vector(0,0,0), unreal.Rotator(0,0,0)))
+        # print (unreal.PropertyValue.set_editor_property(Text, "Yespls"))
+        # print (unreal.PropertyValue.get_editor_property(Text))
 
 
     def populate_level(self):
-
         # Still Need to Fix a proper offset between assets
         self.assets = unreal.EditorUtilityLibrary.get_selected_assets() 
-        self.create_level_folder()
         if len(self.assets) == 0:
             unreal.EditorDialog.show_message("Wold Populator", "Error: Please select Static Meshes from Content Browser!",message_type=unreal.AppMsgType.OK)
         else:      
@@ -148,14 +194,15 @@ class TestWidget(QtWidgets.QWidget):
         # self.pop_message_window("LevelPopulator", self.total_assets_places)
 
     def btn_populate(self):
-        print('Clicked')
-        unreal.log('---Clicked---')
         self.populate_level()
         self.get_number_of_assets()
         self.loop_count = 0 # Reseting Counter in case you want to place it again
+    
+    def btn_test(self):
+        self.create_text_render()
 
     def quit_app(self):
-        print("quiting")
+        unreal.log("---Quitting---")
         self.close()
 
 
