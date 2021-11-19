@@ -3,7 +3,6 @@ import PySide2
 import unreal
 import sys
 import os
-import qdarkstyle
 from PySide2 import QtGui, QtCore, QtWidgets
 from PySide2.QtGui import QPalette, QColor
 from PySide2.QtCore import Qt, QSize
@@ -27,9 +26,11 @@ https://docs.unrealengine.com/4.27/en-US/PythonAPI/search.html?q=bounding+box
 
 unreal.log("---Starting the show---")
 
-
+"""
 Author = "Ioan-Andrei Nistor"
 Contact = "ioan.andrei.nistor@gmail.com"
+"""
+
 
 
 StyleSheetFile = "D:/GitHubRepos/UnrealMapPopulator/UnrealMapPop/darkOrange.css"
@@ -102,6 +103,7 @@ class TestWidget(QtWidgets.QWidget):
         btn_quit.clicked.connect(self.quit_app)
         vbox.addWidget(btn_quit)
 
+
 # # # UI WORK FOR MOUSE DRAG AND DROP
 #     def mousePressEvent(self, event):
 #         if event.button() == QtCore.Qt.LeftButton:
@@ -130,38 +132,38 @@ class TestWidget(QtWidgets.QWidget):
         unreal.EditorDialog.show_message(title, description,message_type=unreal.AppMsgType.OK)
 
     def get_class(self, asset):
-        #Get Selection
+        # get the class instance and the clear text name
         print ("Looking into Class of Selected")
-        #Returns class
+        self.editor_util = unreal.EditorUtilityLibrary()
+        self.selected_assets = self.editor_util.get_selected_assets()
+        for i in self.selected_assets:
+            self.asset_name = asset.get_fname()
+            self.asset_class = asset.get_class()
+            self.class_name = system_lib.get_class_display_name(self.asset_class)
+
 
     def create_level_folder(self):
         # Lets create a folder to place assets in
         # unreal.EditorLevelUtils.get_name()
         return
 
-    def create_text_render(self):
-        # Get actor from class Text Render Actor
+    def create_text_render(self, placing):
+        """
+        Adds a text render asset to the level in front of the last added asset.
+        Expects placing location args
+        """
         # Spawn Asset
-        unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.TextRenderActor, unreal.Vector(0,0,0), unreal.Rotator(0,0,0))
-        # print(unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.TextRenderActor, unreal.Vector(0,0,0), unreal.Rotator(0,0,0)))
-        # print (unreal.PropertyValue.set_editor_property(Text, "Yespls"))
-        # print (unreal.PropertyValue.get_editor_property(Text))
+        unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.TextRenderActor, unreal.Vector(placing), unreal.Rotator(0,0,0))
+        # Do math to figure out max bbox of last placed prop to figure out placement of the text label, i need to decide if i want it below the prop (which would make sense) or on top
+        print (unreal.PropertyValue.set_editor_property(Text, "Yespls"))  # This does not work for some reason, maybe i need to get selection of last placed asset before?
 
 
     def populate_level(self):
-        # Still Need to Fix a proper offset between assets
         self.assets = unreal.EditorUtilityLibrary.get_selected_assets() 
         if len(self.assets) == 0:
             unreal.EditorDialog.show_message("Wold Populator", "Error: Please select Static Meshes from Content Browser!",message_type=unreal.AppMsgType.OK)
         else:      
             with unreal.ScopedEditorTransaction("Undo Stack") as trans:   #Undo Stack
-                # with unreal.ScopedSlowTask(self.total_frames, self.text_label_progress) as slow_task:
-                #     slow_task.make_dialog(True)
-                #     for i in range(self.total_frames):
-                #         if slow_task.should_cancel():
-                #             break
-                #         slow_task.enter_progress_frame(1)
-                        
                 for i in self.assets:
                     asset_data = unreal.EditorUtilityLibrary.get_selected_asset_data()
                     # asset_type = unreal.EditorUtilityLibrary.get_class()
@@ -181,17 +183,22 @@ class TestWidget(QtWidgets.QWidget):
                     print (actor_location_math.x, actor_location_math.y, actor_location_math.z)
                     actor_rotation = unreal.Rotator(0.0, 0.0, 0.0)      # Dont really think this will ever be needed but its here in case its needed
                     unreal.EditorLevelLibrary.spawn_actor_from_object(try_to_load, actor_location_math, actor_rotation)
-                    # unreal.EditorLevelLibrary().spawn_actor_from_class(unreal.StaticMeshActor("TextRenderActor"), actor_location_math, actor_rotation)
+                    self.create_text_render(actor_location_math) #REPLACE ACTOR_LOCATION_MATH WITH PROPER LOCATION 
                     self.loop_count += 1 
                     self.coord_y = self.coord_y - self.get_bbox_min *2 # Keep offsetting
                     
-                    # Get highest number of BBox on X from previous placement
+                    # Ge
+                    # t highest number of BBox on X from previous placement
                 
         return self.loop_count
 
     def get_number_of_assets(self):
         self.total_assets_places = str(str("Total of: ") + str(self.loop_count) + str(" assets placed"))
         # self.pop_message_window("LevelPopulator", self.total_assets_places)
+
+    def select_last_placed_asset(self):
+        #TODO: Create a function that returns as selection the last placed asset
+        return
 
     def btn_populate(self):
         self.populate_level()
