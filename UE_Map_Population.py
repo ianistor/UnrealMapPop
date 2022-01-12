@@ -155,7 +155,7 @@ class TestWidget(QtWidgets.QWidget):
         # Spawn Asset
         unreal.EditorLevelLibrary.spawn_actor_from_class(unreal.TextRenderActor, unreal.Vector(placing), unreal.Rotator(0,0,0))
         # Do math to figure out max bbox of last placed prop to figure out placement of the text label, i need to decide if i want it below the prop (which would make sense) or on top
-        print (unreal.PropertyValue.set_editor_property(Text, "Yespls"))  # This does not work for some reason, maybe i need to get selection of last placed asset before?
+        print (unreal.PropertyValue.set_editor_property(Text, "PleaseWork!"))  # This does not work for some reason, maybe i need to get selection of last placed asset before?
 
 
     def populate_level(self):
@@ -183,7 +183,7 @@ class TestWidget(QtWidgets.QWidget):
                     print (actor_location_math.x, actor_location_math.y, actor_location_math.z)
                     actor_rotation = unreal.Rotator(0.0, 0.0, 0.0)      # Dont really think this will ever be needed but its here in case its needed
                     unreal.EditorLevelLibrary.spawn_actor_from_object(try_to_load, actor_location_math, actor_rotation)
-                    self.create_text_render(actor_location_math) #REPLACE ACTOR_LOCATION_MATH WITH PROPER LOCATION 
+                    # self.create_text_render(actor_location_math) #REPLACE ACTOR_LOCATION_MATH WITH PROPER LOCATION 
                     self.loop_count += 1 
                     self.coord_y = self.coord_y - self.get_bbox_min *2 # Keep offsetting
                     
